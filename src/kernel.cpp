@@ -300,7 +300,7 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     amd_am79c973* eth0 = (amd_am79c973*)(drvManager.drivers[2]);
 
     // IP Address
-    int8_t ip1 = 192, ip2 = 168, ip3 = 56, ip4 = 108;
+    int8_t ip1 = 192, ip2 = 168, ip3 = 1, ip4 = 49;
     uint32_t ip_be = ((uint32_t)ip4 << 24)
                 | ((uint32_t)ip3 << 16)
                 | ((uint32_t)ip2 << 8)
@@ -310,7 +310,7 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     AddressResolutionProtocol arp(&etherframe);    
 
     // IP Address of the default gateway
-    uint8_t gip1 = 192, gip2 = 168, gip3 = 56, gip4 = 1;
+    uint8_t gip1 = 192, gip2 = 168, gip3 = 1, gip4 = 39;
     uint32_t gip_be = ((uint32_t)gip4 << 24)
                    | ((uint32_t)gip3 << 16)
                    | ((uint32_t)gip2 << 8)
