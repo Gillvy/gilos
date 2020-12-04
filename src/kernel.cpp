@@ -192,7 +192,7 @@ extern "C" void callConstructors()
 
 extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot_magic*/)
 {
-    printf("Hello World! --- http://www.AlgorithMan.de\n");
+//    printf("Hello World! --- http://www.AlgorithMan.de\n");
 
     GlobalDescriptorTable gdt;
     
@@ -298,25 +298,38 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
 
                    
     amd_am79c973* eth0 = (amd_am79c973*)(drvManager.drivers[2]);
+    printf("\n\n\n\n\n\n\n\n\n\n");
 
     // IP Address
-    int8_t ip1 = 192, ip2 = 168, ip3 = 1, ip4 = 49;
+    uint8_t ip1 = 127, ip2 = 0, ip3 = 0, ip4 = 1;
+//    uint8_t ip1 = 192, ip2 = 168, ip3 = 1, ip4 = 109;
+//    uint8_t ip1 = 44, ip2 = 1, ip3 = 168, ip4 = 192;
     uint32_t ip_be = ((uint32_t)ip4 << 24)
-                | ((uint32_t)ip3 << 16)
-                | ((uint32_t)ip2 << 8)
-                | (uint32_t)ip1;
+                   | ((uint32_t)ip3 << 16)
+                   | ((uint32_t)ip2 << 8)
+                   | (uint32_t)ip1;
+//    uint8_t tip1 = 192, tip2 = 168, tip3 = 1, tip4 = 39;
+//    uint32_t tip_be = ((uint32_t)tip4 << 24)
+//                   | ((uint32_t)tip3 << 16)
+//                   | ((uint32_t)tip2 << 8)
+//                   | (uint32_t)tip1;
+//    printfHex32(tip_be);
+
     eth0->SetIPAddress(ip_be);
     EtherFrameProvider etherframe(eth0);
-    AddressResolutionProtocol arp(&etherframe);    
+    AddressResolutionProtocol arp(&etherframe);
 
     // IP Address of the default gateway
-    uint8_t gip1 = 192, gip2 = 168, gip3 = 1, gip4 = 39;
+    uint8_t gip1 = 127, gip2 = 0, gip3 = 0, gip4 = 1;
+//    uint8_t gip1 = 192, gip2 = 168, gip3 = 1, gip4 = 39;
+//    uint8_t gip1 = 39, gip2 = 1, gip3 = 168, gip4 = 192;
     uint32_t gip_be = ((uint32_t)gip4 << 24)
                    | ((uint32_t)gip3 << 16)
                    | ((uint32_t)gip2 << 8)
                    | (uint32_t)gip1;
-    
-    uint8_t subnet1 = 255, subnet2 = 255, subnet3 = 255, subnet4 = 0;
+    uint8_t subnet1 = 255, subnet2 = 0, subnet3 = 0, subnet4 = 0;
+//    uint8_t subnet1 = 255, subnet2 = 255, subnet3 = 255, subnet4 = 0;
+//    uint8_t subnet1 = 0, subnet2 = 255, subnet3 = 255, subnet4 = 255;
     uint32_t subnet_be = ((uint32_t)subnet4 << 24)
                    | ((uint32_t)subnet3 << 16)
                    | ((uint32_t)subnet2 << 8)
@@ -325,14 +338,50 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     InternetControlMessageProtocol icmp(&ipv4);
     UserDatagramProtocolProvider udp(&ipv4);
     
+    printf("\nip_be:  ");
+    printfHex32(ip_be);
+    printf(" ( ");
+    printfHex(ip1);
+    printf(" . ");
+    printfHex(ip2);
+    printf(" . ");
+    printfHex(ip3);
+    printf(" . ");
+    printfHex(ip4);
+    printf(" ) ");
+    printf("\ngip_be:  ");
+    printfHex32(gip_be);
+    printf(" ( ");
+    printfHex(gip1);
+    printf(" . ");
+    printfHex(gip2);
+    printf(" . ");
+    printfHex(gip3);
+    printf(" . ");
+    printfHex(gip4);
+    printf(" ) ");
+    printf("\nsubnet_be:  ");
+    printfHex32(subnet_be);
+    printf(" ( ");
+    printfHex(subnet1);
+    printf(" . ");
+    printfHex(subnet2);
+    printf(" . ");
+    printfHex(subnet3);
+    printf(" . ");
+    printfHex(subnet4);
+    printf(" ) ");
     
     interrupts.Activate();
 
-//    printf("\n\n\n\n\n\n\n\n\n\n");
-    printf("\nUDP START\n");
+    printf("\n\nUDP START");
 
-    arp.BroadcastMACAddress(gip_be);
-    icmp.RequestEchoReply(gip_be);
+//    arp.RequestMACAddress(ip_be);
+    printf("\narp.RequestMACAddress pass");
+    arp.BroadcastMACAddress(ip_be);
+    printf("\narp.BroadcastMACAddress pass");
+    icmp.RequestEchoReply(ip_be);
+    printf("\nicmp.RequestEchoReply pass");
 
     PrintfUDPHandler udphandler;
 
@@ -342,14 +391,20 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
 //    udpsocket->Send((uint8_t*)"Hello UDP!", 10);
 
 //    UserDatagramProtocolSocket* udpsocket = udp.Listen(1234);
+//    udp.Bind(udpsocket, &udphandler);
     UserDatagramProtocolSocket* udpsocket;
-    udp.Bind(udpsocket, &udphandler);
+
     printf("\nUDP END");
-    
+    printf("\nBEGIN LOOP");
+
     while(1)
     {
-        udpsocket = udp.Listen(1234);
+//        PrintfUDPHandler udphandler;
+        UserDatagramProtocolSocket* udpsocket = udp.Listen(1234);
+//        udpsocket = udp.Connect(gip_be, 1234);
+//        udpsocket = udp.Listen(1234);
         udp.Bind(udpsocket, &udphandler);
+//        udpsocket->Send((uint8_t*)"Hello UDP!", 10);
         #ifdef GRAPHICSMODE
             desktop.Draw(&vga);
         #endif
